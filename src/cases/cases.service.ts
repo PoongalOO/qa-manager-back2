@@ -156,18 +156,15 @@ export class CasesService {
 
     if (runId) {
       const runCases = await this.runCaseRepo.find({ where: { runId } });
-      if (!runCases.length) return [];
 
       for (const rc of runCases) {
         runCaseMap.set(rc.caseId, rc);
       }
 
-      let targetRunCases = runCases;
       if (status !== undefined) {
-        targetRunCases = runCases.filter(rc => rc.status === status);
+        filteredCaseIds = runCases.filter(rc => rc.status === status).map(rc => rc.caseId);
+        if (!filteredCaseIds.length) return [];
       }
-      filteredCaseIds = targetRunCases.map(rc => rc.caseId);
-      if (!filteredCaseIds.length) return [];
     }
 
     const qb = this.caseRepo
@@ -188,15 +185,18 @@ export class CasesService {
 
     const cases = await qb.getMany();
 
-    if (viewUserId && runId) {
+    if (runId) {
       for (const c of cases as any[]) {
         const rc = runCaseMap.get(c.id);
-        if (rc) {
-          c.runCaseResults = await this.runCaseResultRepo.find({
+        if (!rc) {
+          c.RunCases = [];
+          continue;
+        }
+        c.RunCases = [{ ...rc, editState: 'notChanged' }];
+        if (viewUserId) {
+          c.RunCases[0].RunCaseResults = await this.runCaseResultRepo.find({
             where: { runCaseId: rc.id, userId: viewUserId },
           });
-        } else {
-          c.runCaseResults = [];
         }
       }
     }

@@ -5,10 +5,10 @@ import { RunCase } from '../entities/run-case.entity';
 import { RunCaseResult } from '../entities/run-case-result.entity';
 
 export interface RunCaseUpdate {
+  id: number;
   caseId: number;
   status: number;
-  editState: 'created' | 'updated' | 'deleted';
-  runCaseId?: number;
+  editState: 'notChanged' | 'changed' | 'new' | 'deleted';
 }
 
 export interface MyResultUpdate {
@@ -34,7 +34,7 @@ export class RunCasesService {
 
   async updateRunCases(runId: number, updates: RunCaseUpdate[]) {
     for (const update of updates) {
-      if (update.editState === 'created') {
+      if (update.editState === 'new') {
         const existing = await this.runCaseRepo.findOne({
           where: { runId, caseId: update.caseId },
         });
@@ -46,14 +46,14 @@ export class RunCasesService {
           });
           await this.runCaseRepo.save(rc);
         }
-      } else if (update.editState === 'updated' && update.runCaseId) {
-        const rc = await this.runCaseRepo.findOne({ where: { id: update.runCaseId } });
+      } else if (update.editState === 'changed' && update.id) {
+        const rc = await this.runCaseRepo.findOne({ where: { id: update.id } });
         if (rc) {
           rc.status = update.status;
           await this.runCaseRepo.save(rc);
         }
-      } else if (update.editState === 'deleted' && update.caseId) {
-        const rc = await this.runCaseRepo.findOne({ where: { runId, caseId: update.caseId } });
+      } else if (update.editState === 'deleted' && update.id) {
+        const rc = await this.runCaseRepo.findOne({ where: { id: update.id } });
         if (rc) await this.runCaseRepo.remove(rc);
       }
     }
