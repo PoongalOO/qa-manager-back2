@@ -163,6 +163,19 @@ export class UsersService {
     return { user: this.toPublic(user) };
   }
 
+  async deleteUser(userId: number) {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User not found');
+    if (user.role === 0) {
+      const adminCount = await this.userRepo.count({ where: { role: 0 } });
+      if (adminCount <= 1) {
+        throw new ConflictException('At least one administrator is required');
+      }
+    }
+    await this.userRepo.remove(user);
+    return { message: 'User deleted' };
+  }
+
   async getMyRoles(userId: number) {
     const ownedProjects = await this.projectRepo.find({
       where: { userId },

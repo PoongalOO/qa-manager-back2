@@ -130,4 +130,14 @@ export class UsersController {
     this.permissionsService.verifyAdmin(user);
     return this.usersService.adminResetPassword(userId, body.newPassword);
   }
+
+  // Admin: delete another user's account
+  @Delete(':userId')
+  async deleteUser(
+    @CurrentUser() user: User,
+    @Param('userId', ParseIntPipe) userId: number,
+  ) {
+    this.permissionsService.verifyAdmin(user);
+    return this.usersService.deleteUser(userId);
+  }
 }
