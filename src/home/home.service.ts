@@ -29,7 +29,7 @@ export class HomeService {
           .leftJoinAndSelect('c.tags', 'tag')
           .where('c.folderId = :folderId', { folderId: folder.id })
           .getMany();
-        return { ...folder, cases };
+        return { ...folder, Cases: cases };
       }),
     );
 
@@ -45,14 +45,14 @@ export class HomeService {
           .leftJoinAndSelect('rc.case', 'case')
           .where('rc.runId = :runId', { runId: run.id })
           .getMany();
-        return { ...run, runCases };
+        return { ...run, RunCases: runCases };
       }),
     );
 
     return {
-      project,
-      folders: foldersWithCases,
-      runs: runsWithCases,
+      ...project,
+      Folders: foldersWithCases,
+      Runs: runsWithCases,
     };
   }
 }

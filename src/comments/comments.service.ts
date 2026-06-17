@@ -35,7 +35,7 @@ export class CommentsService {
 
     return comments.map(c => ({
       ...c,
-      user: c.user ? {
+      User: c.user ? {
         id: c.user.id,
         username: c.user.username,
         email: c.user.email,

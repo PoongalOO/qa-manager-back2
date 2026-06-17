@@ -59,7 +59,7 @@ export class UsersService {
   async findById(id: number) {
     const user = await this.userRepo.findOne({ where: { id } });
     if (!user) throw new NotFoundException('User not found');
-    return { user: this.toPublic(user) };
+    return this.toPublic(user);
   }
 
   async search(keyword: string) {

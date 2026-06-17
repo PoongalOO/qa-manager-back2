@@ -10,11 +10,12 @@ export class MembersService {
   ) {}
 
   async findAll(projectId: number) {
-    return this.memberRepo
+    const members = await this.memberRepo
       .createQueryBuilder('m')
       .leftJoinAndSelect('m.user', 'user')
       .where('m.projectId = :projectId', { projectId })
       .getMany();
+    return members.map(m => ({ ...m, User: (m as any).user }));
   }
 
   async create(projectId: number, userId: number) {
