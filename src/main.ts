@@ -8,6 +8,12 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  // Global route prefix (set when the app is deployed under a subpath, e.g. /qa-manager-backend)
+  const apiPrefix = process.env.API_PREFIX;
+  if (apiPrefix) {
+    app.setGlobalPrefix(apiPrefix);
+  }
+
   // CORS
   const frontendOrigin = process.env.FRONTEND_ORIGIN || 'http://localhost:4200';
   app.enableCors({
@@ -28,7 +34,7 @@ async function bootstrap() {
 
   // Serve static files from public directory
   app.useStaticAssets(path.join(process.cwd(), 'public'), {
-    prefix: '/public',
+    prefix: apiPrefix ? `/${apiPrefix}/public` : '/public',
   });
 
   // Validation pipe
