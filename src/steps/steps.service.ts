@@ -7,7 +7,7 @@ import { CaseStep } from '../entities/case-step.entity';
 export interface StepUpdate {
   step?: string;
   result?: string;
-  editState: 'created' | 'updated' | 'deleted';
+  editState: 'notChanged' | 'changed' | 'new' | 'deleted';
   caseSteps?: { stepNo: number };
   id?: number; // stepId for update/delete
 }
@@ -21,7 +21,7 @@ export class StepsService {
 
   async updateSteps(caseId: number, updates: StepUpdate[]) {
     for (const update of updates) {
-      if (update.editState === 'created') {
+      if (update.editState === 'new') {
         const newStep = this.stepRepo.create({
           step: update.step,
           result: update.result,
@@ -34,7 +34,7 @@ export class StepsService {
           stepNo: update.caseSteps?.stepNo ?? 0,
         });
         await this.caseStepRepo.save(caseStep);
-      } else if (update.editState === 'updated' && update.id) {
+      } else if (update.editState === 'changed' && update.id) {
         const step = await this.stepRepo.findOne({ where: { id: update.id } });
         if (step) {
           if (update.step !== undefined) step.step = update.step;
