@@ -28,7 +28,12 @@ export class RunCasesController {
   }
 
   @Post('myresults')
-  async myResults(@CurrentUser() user: User, @Body() body: any[]) {
-    return this.runCasesService.updateMyResults(user.id, body);
+  async myResults(
+    @CurrentUser() user: User,
+    @Query('runId', ParseIntPipe) runId: number,
+    @Body() body: any[],
+  ) {
+    await this.permissionsService.verifyProjectReporterFromRunId(runId, user);
+    return this.runCasesService.updateMyResults(user.id, runId, body);
   }
 }

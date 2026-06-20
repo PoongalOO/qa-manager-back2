@@ -61,9 +61,13 @@ export class RunCasesService {
     return this.findAll(runId);
   }
 
-  async updateMyResults(userId: number, updates: MyResultUpdate[]) {
+  async updateMyResults(userId: number, runId: number, updates: MyResultUpdate[]) {
+    const runCases = await this.runCaseRepo.find({ where: { runId } });
+    const validRunCaseIds = new Set(runCases.map(rc => rc.id));
+
     const results: RunCaseResult[] = [];
     for (const update of updates) {
+      if (!validRunCaseIds.has(update.runCaseId)) continue;
       let result = await this.runCaseResultRepo.findOne({
         where: { runCaseId: update.runCaseId, userId },
       });
