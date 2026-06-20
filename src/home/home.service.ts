@@ -1,11 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Project } from '../entities/project.entity';
 import { Folder } from '../entities/folder.entity';
 import { Case } from '../entities/case.entity';
 import { Run } from '../entities/run.entity';
 import { RunCase } from '../entities/run-case.entity';
+import { RunCaseResult } from '../entities/run-case-result.entity';
 
 @Injectable()
 export class HomeService {
@@ -15,6 +16,7 @@ export class HomeService {
     @InjectRepository(Case) private caseRepo: Repository<Case>,
     @InjectRepository(Run) private runRepo: Repository<Run>,
     @InjectRepository(RunCase) private runCaseRepo: Repository<RunCase>,
+    @InjectRepository(RunCaseResult) private runCaseResultRepo: Repository<RunCaseResult>,
   ) {}
 
   async getHome(projectId: number) {
@@ -45,7 +47,24 @@ export class HomeService {
           .leftJoinAndSelect('rc.case', 'case')
           .where('rc.runId = :runId', { runId: run.id })
           .getMany();
-        return { ...run, RunCases: runCases };
+
+        const runCaseIds = runCases.map((rc) => rc.id);
+        const results = runCaseIds.length
+          ? await this.runCaseResultRepo.find({ where: { runCaseId: In(runCaseIds) } })
+          : [];
+        const resultsByRunCase = new Map<number, { userId: number; status: number }[]>();
+        for (const r of results) {
+          const list = resultsByRunCase.get(r.runCaseId) ?? [];
+          list.push({ userId: r.userId, status: r.status });
+          resultsByRunCase.set(r.runCaseId, list);
+        }
+
+        const runCasesWithResults = runCases.map((rc) => ({
+          ...rc,
+          RunCaseResults: resultsByRunCase.get(rc.id) ?? [],
+        }));
+
+        return { ...run, RunCases: runCasesWithResults };
       }),
     );
 
