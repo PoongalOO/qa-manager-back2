@@ -25,7 +25,9 @@ export class RunsController {
     @Query('projectId', ParseIntPipe) projectId: number,
   ) {
     await this.permissionsService.verifyProjectVisible(projectId, user);
-    return this.runsService.findAll(projectId);
+    const runs = await this.runsService.findAll(projectId);
+    if (await this.permissionsService.isProjectDeveloper(projectId, user)) return runs;
+    return runs.filter((r) => r.state !== 5); // closed runs are hidden from reporters
   }
 
   @Post('download')
@@ -62,7 +64,7 @@ export class RunsController {
     @Param('runId', ParseIntPipe) runId: number,
     @Body() body: any,
   ) {
-    await this.permissionsService.verifyProjectDeveloperFromRunId(runId, user);
+    await this.permissionsService.verifyProjectManagerFromRunId(runId, user);
     return this.runsService.update(runId, body);
   }
 

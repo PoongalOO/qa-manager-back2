@@ -168,9 +168,14 @@ export class PermissionsService {
     await this.verifyProjectReporter(projectId, user);
   }
 
+  // Closed (state 5) runs are hidden from reporters; developers and above still see them.
   async verifyProjectVisibleFromRunId(runId: number, user: User) {
-    const projectId = await this.getProjectIdFromRunId(runId);
-    await this.verifyProjectVisible(projectId, user);
+    const run = await this.runRepo.findOne({ where: { id: runId } });
+    if (!run) throw new NotFoundException('Run not found');
+    await this.verifyProjectVisible(run.projectId, user);
+    if (run.state === 5 && !(await this.isProjectDeveloper(run.projectId, user))) {
+      throw new ForbiddenException('This run is closed');
+    }
   }
 
   async verifyProjectManagerFromRunCaseId(runCaseId: number, user: User) {
@@ -186,6 +191,15 @@ export class PermissionsService {
   async isProjectManager(projectId: number, user: User): Promise<boolean> {
     try {
       await this.verifyProjectManager(projectId, user);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async isProjectDeveloper(projectId: number, user: User): Promise<boolean> {
+    try {
+      await this.verifyProjectDeveloper(projectId, user);
       return true;
     } catch {
       return false;

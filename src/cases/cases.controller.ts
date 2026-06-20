@@ -28,6 +28,7 @@ export class CasesController {
     @Query('viewUserId') viewUserId: string,
   ) {
     await this.permissionsService.verifyProjectVisible(projectId, user);
+    if (runId) await this.permissionsService.verifyProjectVisibleFromRunId(parseInt(runId), user);
     return this.casesService.indexByProjectId(
       projectId,
       runId ? parseInt(runId) : undefined,
@@ -49,6 +50,7 @@ export class CasesController {
     @Query('viewUserId') viewUserId: string,
   ) {
     await this.permissionsService.verifyProjectVisible(projectId, user);
+    if (runId) await this.permissionsService.verifyProjectVisibleFromRunId(parseInt(runId), user);
     return this.casesService.indexByProjectId(
       projectId,
       runId ? parseInt(runId) : undefined,

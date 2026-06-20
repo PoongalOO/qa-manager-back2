@@ -24,7 +24,9 @@ export class RunCasesController {
     @Body() body: any[],
   ) {
     await this.permissionsService.verifyProjectDeveloperFromRunId(runId, user);
-    return this.runCasesService.updateRunCases(runId, body);
+    const projectId = await this.permissionsService.getProjectIdFromRunId(runId);
+    const isManager = await this.permissionsService.isProjectManager(projectId, user);
+    return this.runCasesService.updateRunCases(runId, body, isManager);
   }
 
   @Post('myresults')
@@ -34,6 +36,9 @@ export class RunCasesController {
     @Body() body: any[],
   ) {
     await this.permissionsService.verifyProjectReporterFromRunId(runId, user);
-    return this.runCasesService.updateMyResults(user.id, runId, body);
+    const projectId = await this.permissionsService.getProjectIdFromRunId(runId);
+    const isManager = await this.permissionsService.isProjectManager(projectId, user);
+    const isDeveloper = await this.permissionsService.isProjectDeveloper(projectId, user);
+    return this.runCasesService.updateMyResults(user.id, runId, body, isManager, isDeveloper);
   }
 }
