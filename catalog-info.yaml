@@ -1,0 +1,68 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: qa-manager-backend
+  title: QA Manager Backend
+  description: Backend NestJS de l'application QA Manager.
+  annotations:
+    github.com/project-slug: PoongalOO/qa-manager-back2
+    backstage.io/techdocs-ref: dir:.
+  tags:
+    - qa
+    - backend
+    - nestjs
+    - typescript
+    - api
+spec:
+  type: service
+  lifecycle: experimental
+  owner: guests
+  system: qa-manager
+  dependsOn:
+    - resource:default/qa-manager-database
+  providesApis:
+    - qa-manager-backend-api
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: qa-manager-backend-api
+  title: QA Manager Backend API
+  description: API exposée par le backend QA Manager.
+  tags:
+    - qa
+    - rest
+    - nestjs
+spec:
+  type: openapi
+  lifecycle: experimental
+  owner: guests
+  system: qa-manager
+  definition: |
+    openapi: 3.0.3
+    info:
+      title: QA Manager Backend API
+      version: 0.0.1
+      description: API REST du backend QA Manager.
+    servers:
+      - url: http://localhost:3000
+        description: Environnement local
+    paths: {}
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: qa-manager-database
+  title: QA Manager Database
+  description: Base de données MySQL/MariaDB utilisée par QA Manager Backend.
+  tags:
+    - mysql
+    - mariadb
+    - database
+spec:
+  type: database
+  lifecycle: experimental
+  owner: guests
+  system: qa-manager
